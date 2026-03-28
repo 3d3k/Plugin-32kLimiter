@@ -1,15 +1,5 @@
-> [!CAUTION]
-> After July 5, 2025, this project will be archived and no longer maintained.
-
 32kLimiter
 ---
-![Version](https://img.shields.io/github/v/release/GuangChen2333/32kLimiter)
-![Download](https://img.shields.io/github/downloads/GuangChen2333/32kLimiter/total)
-![License](https://img.shields.io/github/license/GuangChen2333/32kLimiter)
-![Stars](https://img.shields.io/github/stars/GuangChen2333/32kLimiter)
-
-**English** | [简体中文](https://github.com/GuangChen2333/32kLimiter/blob/master/README_cn.md)
-
 A Spigot plugin for limiting 32k weapons
 
 Supported versions of Minecraft: 1.12.2
