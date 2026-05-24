@@ -1,8 +1,7 @@
 package com.zhouyi.mc3d3k.limiter32k.commands;
 
 import com.zhouyi.mc3d3k.limiter32k.LimiterMain;
-import de.tr7zw.nbtapi.NBT;
-import de.tr7zw.nbtapi.NBTItem;
+import com.zhouyi.mc3d3k.limiter32k.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -130,14 +129,15 @@ public class LimiterCommand implements TabExecutor {
                     sender.sendMessage(ChatColor.RED + "\u4f60\u624b\u4e2d\u6ca1\u6709\u7269\u54c1\u3002");
                     return false;
                 }
-                try {
-                    NBTItem nbtItem = new NBTItem(mainHand);
-                    // 清除所有NBT标签 —— 直接替换为新物品（无NBT数据）
+                // \u5148\u7528\u6240\u6709\u68c0\u6d4b\u6a21\u5757\u68c0\u67e5\u7269\u54c1\u662f\u5426\u8fdd\u89c4
+                Utils utils = new Utils();
+                if (utils.checkItem(mainHand)) {
+                    // \u68c0\u6d4b\u5230\u8fdd\u89c4\uff0c\u76f4\u63a5\u6e05\u9664
                     ItemStack clearItem = new ItemStack(mainHand.getType(), mainHand.getAmount());
                     player.getInventory().setItemInMainHand(clearItem);
-                    sender.sendMessage(ChatColor.GREEN + "\u5df2\u6e05\u9664\u624b\u4e2d\u7269\u54c1\u7684\u6240\u6709NBT\u6570\u636e\u3002");
-                } catch (Exception e) {
-                    sender.sendMessage(ChatColor.RED + "\u6e05\u9664NBT\u5931\u8d25\u3002\u8bf7\u786e\u8ba4\u5b89\u88c5\u4e86NBTAPI\u3002");
+                    sender.sendMessage(ChatColor.GREEN + "\u68c0\u6d4b\u5230\u8fdd\u89c4\u7269\u54c1\uff0c\u5df2\u6e05\u9664\u3002");
+                } else {
+                    sender.sendMessage(ChatColor.GREEN + "\u8be5\u7269\u54c1\u672a\u68c0\u6d4b\u5230\u8fdd\u89c4\u6570\u636e\uff0c\u65e0\u9700\u6e05\u9664\u3002");
                 }
                 break;
             default:
