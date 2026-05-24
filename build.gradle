@@ -3,8 +3,11 @@ plugins {
 }
 
 group 'com.zhouyi.mc3d3k.limiter32k'
-version '3.0.0'
 archivesBaseName = 'Limiter32k'
+
+// 从 version.txt 读取版本号（构建时自动递增）
+def versionFile = file('version.txt')
+version = versionFile.exists() ? versionFile.text.trim() : '1.0.0'
 
 repositories {
     mavenCentral()
@@ -44,11 +47,26 @@ tasks.withType(JavaCompile) {
 tasks.withType(ProcessResources) {
     filesMatching('**/*.yml') {
         filter {
-            it.replace('\uFFFD', '')
+            it.replace('\uFFFD', '').replace('${version}', project.version)
         }
     }
 }
 
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
+/** 版本递增任务 — 每次构建自动补丁版本号 +1 */
+tasks.register('incrementVersion') {
+    doLast {
+        def vFile = file('version.txt')
+        def text = vFile.text.trim()
+        def matcher = text =~ /(\d+)\.(\d+)\.(\d+)/
+        if (matcher.find()) {
+            def major = matcher.group(1) as int
+            def minor = matcher.group(2) as int
+            def patch = (matcher.group(3) as int) + 1
+            def newVersion = "${major}.${minor}.${patch}"
+            vFile.write(newVersion + '\n')
+            println "版本已递增到: ${newVersion}"
+        }
+    }
 }
+
+processResources.dependsOn incrementVersion

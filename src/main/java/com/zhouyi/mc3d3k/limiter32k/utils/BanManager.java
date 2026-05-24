@@ -25,7 +25,7 @@ public class BanManager {
 
     public BanManager(LimiterMain plugin) {
         this.plugin = plugin;
-        this.dataFile = new File(plugin.getDataFolder(), "bans.yml");
+        this.dataFile = new File(plugin.getDataFolder(), "data.yml");
         load();
     }
 
@@ -128,7 +128,7 @@ public class BanManager {
         try {
             data.save(dataFile);
         } catch (IOException e) {
-            plugin.getLogger().warning("无法保存 bans.yml: " + e.getMessage());
+            plugin.getLogger().warning("无法保存 data.yml: " + e.getMessage());
         }
     }
 }
