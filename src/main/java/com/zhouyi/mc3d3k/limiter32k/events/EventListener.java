@@ -49,17 +49,50 @@ public class EventListener implements Listener {
         return !player.isOp() && LimiterMain.detectNonOpSpawnEgg && utils.isSpawnEgg(item);
     }
 
+    /**
+     * 判断是否需要清除物品
+     * 先检查玩家白名单、物品空值/AIR、物品白名单，再检查物品黑名单（命中则直接记录并清理），
+     * 最后委托给 utils.checkItem 和 isNonOpWithSpawnEgg 做进一步检测
+     */
+    private boolean shouldClean(Player player, ItemStack item) {
+        if (player != null && LimiterMain.getBanManager().isPlayerWhitelisted(player.getName())) {
+            return false;
+        }
+        if (item == null || item.getType() == Material.AIR) {
+            return false;
+        }
+        if (LimiterMain.getBanManager().isItemWhitelisted(item)) {
+            return false;
+        }
+        if (LimiterMain.getBanManager().isItemBlacklisted(item)) {
+            LimiterMain.getBanManager().logClean(player != null ? player.getName() : "unknown", item, "黑名单物品");
+            return true;
+        }
+        boolean result;
+        if (player == null) {
+            result = utils.checkItem(item, getDetectionFlags());
+        } else {
+            result = utils.checkItem(item, getDetectionFlags()) || isNonOpWithSpawnEgg(player, item);
+        }
+        if (result) {
+            LimiterMain.getBanManager().logClean(player != null ? player.getName() : "unknown", item, "异常物品");
+        }
+        return result;
+    }
+
     @EventHandler
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         if (LimiterMain.isEnabled) {
             if (event.getDamage() > 30D) {
                 if (event.getDamager() instanceof Player) {
                     Player player = (Player) event.getDamager();
-                    if (utils.checkItem(player.getInventory().getItemInMainHand(), getDetectionFlags()) || isNonOpWithSpawnEgg(player, player.getInventory().getItemInMainHand())) {
+                    ItemStack mainHand = player.getInventory().getItemInMainHand();
+                    if (shouldClean(player, mainHand)) {
                         event.setDamage(40D);
                         player.getInventory().setItemInMainHand(AIR);
                     }
-                    if (utils.checkItem(player.getInventory().getItemInOffHand(), getDetectionFlags()) || isNonOpWithSpawnEgg(player, player.getInventory().getItemInOffHand())) {
+                    ItemStack offHand = player.getInventory().getItemInOffHand();
+                    if (shouldClean(player, offHand)) {
                         event.setDamage(40D);
                         player.getInventory().setItemInOffHand(AIR);
                     }
@@ -72,8 +105,8 @@ public class EventListener implements Listener {
     public void onPlayerSwapHandItems(PlayerSwapHandItemsEvent event) {
         if (LimiterMain.isEnabled) {
             Player player = event.getPlayer();
-            boolean mainHandResult = utils.checkItem(event.getMainHandItem(), getDetectionFlags()) || isNonOpWithSpawnEgg(player, event.getMainHandItem());
-            boolean offHandResult = utils.checkItem(event.getOffHandItem(), getDetectionFlags()) || isNonOpWithSpawnEgg(player, event.getOffHandItem());
+            boolean mainHandResult = shouldClean(player, event.getMainHandItem());
+            boolean offHandResult = shouldClean(player, event.getOffHandItem());
             if (mainHandResult) {
                 event.setMainHandItem(AIR);
             }
@@ -89,7 +122,7 @@ public class EventListener implements Listener {
             if (!(event.getEntity() instanceof Player)) return;
             Player player = (Player) event.getEntity();
             ItemStack item = event.getItem().getItemStack();
-            if (utils.checkItem(item, getDetectionFlags()) || isNonOpWithSpawnEgg(player, item)) {
+            if (shouldClean(player, item)) {
                 event.setCancelled(true);
                 event.getItem().remove();
             }
@@ -103,8 +136,7 @@ public class EventListener implements Listener {
             if (event.getWhoClicked() instanceof Player) {
                 player = (Player) event.getWhoClicked();
             }
-            boolean abnormal = utils.checkItem(event.getCurrentItem(), getDetectionFlags())
-                    || (player != null && isNonOpWithSpawnEgg(player, event.getCurrentItem()));
+            boolean abnormal = shouldClean(player, event.getCurrentItem());
             if (abnormal) {
                 event.setCurrentItem(AIR);
             }
@@ -119,7 +151,7 @@ public class EventListener implements Listener {
             if (items.length > 0) {
                 ArrayList<ItemStack> abnormalItems = new ArrayList<>();
                 for (ItemStack item : items) {
-                    if (utils.checkItem(item, getDetectionFlags()) || (player != null && isNonOpWithSpawnEgg(player, item))) {
+                    if (shouldClean(player, item)) {
                         if (!abnormalItems.contains(item)) {
                             abnormalItems.add(item);
                         }
@@ -146,7 +178,7 @@ public class EventListener implements Listener {
             if (items.length > 0) {
                 ArrayList<ItemStack> abnormalItems = new ArrayList<>();
                 for (ItemStack item : items) {
-                    if (utils.checkItem(item, getDetectionFlags()) || (player != null && isNonOpWithSpawnEgg(player, item))) {
+                    if (shouldClean(player, item)) {
                         if (!abnormalItems.contains(item)) {
                             abnormalItems.add(item);
                         }
@@ -164,7 +196,7 @@ public class EventListener implements Listener {
                 if (inventoryContents.length > 0) {
                     ArrayList<ItemStack> abnormalItems = new ArrayList<>();
                     for (ItemStack item : inventoryContents) {
-                        if (utils.checkItem(item, getDetectionFlags()) || (player != null && isNonOpWithSpawnEgg(player, item))) {
+                        if (shouldClean(player, item)) {
                             if (!abnormalItems.contains(item)) {
                                 abnormalItems.add(item);
                             }

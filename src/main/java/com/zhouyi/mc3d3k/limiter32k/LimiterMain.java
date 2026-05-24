@@ -1,5 +1,6 @@
 package com.zhouyi.mc3d3k.limiter32k;
 
+import com.zhouyi.mc3d3k.limiter32k.utils.BanManager;
 import com.zhouyi.mc3d3k.limiter32k.commands.LimiterCommand;
 import com.zhouyi.mc3d3k.limiter32k.events.EventListener;
 import org.bukkit.Bukkit;
@@ -7,6 +8,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class LimiterMain extends JavaPlugin {
     private static LimiterMain INSTANCE;
+    private static BanManager banManager;
     public static boolean isEnabled;
 
     // 各检测模块开关
@@ -30,6 +32,10 @@ public class LimiterMain extends JavaPlugin {
 
     public static LimiterMain getInstance() {
         return INSTANCE;
+    }
+
+    public static BanManager getBanManager() {
+        return banManager;
     }
 
     private void loadDetectionsConfig() {
@@ -60,6 +66,7 @@ public class LimiterMain extends JavaPlugin {
         getLogger().info("=========================================");
         
         saveDefaultConfig();
+        banManager = new BanManager(this);
         getLogger().info("[1/7] 加载配置文件... 完成");
         
         isEnabled = getConfig().getBoolean("enabled");
@@ -82,6 +89,13 @@ public class LimiterMain extends JavaPlugin {
         printDetectionStatus();
         getLogger().info("[7/7] 32kLimiter 启动完成!");
         getLogger().info("=========================================");
+    }
+
+    @Override
+    public void onDisable() {
+        if (banManager != null) {
+            banManager.save();
+        }
     }
 
     private void printDetectionStatus() {

@@ -1,7 +1,7 @@
 package com.zhouyi.mc3d3k.limiter32k.commands;
 
 import com.zhouyi.mc3d3k.limiter32k.LimiterMain;
-import com.zhouyi.mc3d3k.limiter32k.utils.Utils;
+import com.zhouyi.mc3d3k.limiter32k.utils.BanManager;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -13,11 +13,18 @@ import org.bukkit.inventory.ItemStack;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 public class LimiterCommand implements TabExecutor {
 
-    private static final List<String> COMMANDS = Arrays.asList("reload", "config", "enable", "disable", "status");
+    private static final List<String> COMMANDS = Arrays.asList(
+            "reload", "config", "enable", "disable", "status",
+            "banitem", "banlist",
+            "whitelist"
+    );
+
+    private static final List<String> WHITELIST_SUBCOMMANDS = Arrays.asList("add", "remove", "list");
 
     private String bold(String text) {
         return ChatColor.BOLD + text;
@@ -31,6 +38,10 @@ public class LimiterCommand implements TabExecutor {
         return enabled
                 ? ChatColor.GREEN + "\u2714"   // ✔
                 : ChatColor.RED + "\u2718";     // ✘
+    }
+
+    private void noPerm(CommandSender sender) {
+        sender.sendMessage(ChatColor.RED + "此命令仅限OP使用。");
     }
 
     @Override
@@ -73,7 +84,11 @@ public class LimiterCommand implements TabExecutor {
             sender.sendMessage(ChatColor.GOLD + "/" + label + " enable " + ChatColor.WHITE + "- " + ChatColor.GRAY + "\u542f\u7528\u63d2\u4ef6");
             sender.sendMessage(ChatColor.GOLD + "/" + label + " disable " + ChatColor.WHITE + "- " + ChatColor.GRAY + "\u7981\u7528\u63d2\u4ef6");
             sender.sendMessage(ChatColor.GOLD + "/" + label + " status " + ChatColor.WHITE + "- " + ChatColor.GRAY + "\u67e5\u770b\u63d2\u4ef6\u72b6\u6001");
-            sender.sendMessage(ChatColor.GOLD + "/" + label + " banitem " + ChatColor.WHITE + "- " + ChatColor.GRAY + "\u6e05\u9664\u624b\u4e2d\u7269\u54c1NBT");
+            sender.sendMessage(ChatColor.GOLD + "/" + label + " banitem " + ChatColor.WHITE + "- " + ChatColor.GRAY + "\u5c06\u624b\u4e2d\u7269\u54c1\u52a0\u5165\u9ed1\u540d\u5355");
+            sender.sendMessage(ChatColor.GOLD + "/" + label + " banlist " + ChatColor.WHITE + "- " + ChatColor.GRAY + "\u67e5\u770b\u9ed1\u540d\u5355\u7269\u54c1\u5217\u8868");
+            sender.sendMessage(ChatColor.GOLD + "/" + label + " whitelist add [\u73a9\u5bb6] " + ChatColor.WHITE + "- " + ChatColor.GRAY + "\u6dfb\u52a0\u73a9\u5bb6\u6216\u624b\u4e2d\u7269\u54c1\u5230\u767d\u540d\u5355");
+            sender.sendMessage(ChatColor.GOLD + "/" + label + " whitelist remove [\u73a9\u5bb6] " + ChatColor.WHITE + "- " + ChatColor.GRAY + "\u79fb\u9664\u73a9\u5bb6\u6216\u624b\u4e2d\u7269\u54c1\u4ece\u767d\u540d\u5355");
+            sender.sendMessage(ChatColor.GOLD + "/" + label + " whitelist list " + ChatColor.WHITE + "- " + ChatColor.GRAY + "\u67e5\u770b\u767d\u540d\u5355\u73a9\u5bb6\u548c\u7269\u54c1\u5217\u8868");
             return true;
         }
 
@@ -119,25 +134,127 @@ public class LimiterCommand implements TabExecutor {
                 sender.sendMessage(ChatColor.GOLD + "\u63d2\u4ef6\u5f53\u524d\u72b6\u6001: " + status); // 插件当前状态:
                 break;
             case "banitem":
+                if (!sender.isOp()) { noPerm(sender); return true; }
                 if (!(sender instanceof Player)) {
                     sender.sendMessage(ChatColor.RED + "\u8be5\u547d\u4ee4\u53ea\u80fd\u7531\u73a9\u5bb6\u4f7f\u7528\u3002");
-                    return false;
+                    return true;
                 }
-                Player player = (Player) sender;
-                ItemStack mainHand = player.getInventory().getItemInMainHand();
-                if (mainHand == null || mainHand.getType() == Material.AIR) {
-                    sender.sendMessage(ChatColor.RED + "\u4f60\u624b\u4e2d\u6ca1\u6709\u7269\u54c1\u3002");
-                    return false;
+                {
+                    Player p = (Player) sender;
+                    ItemStack hand = p.getInventory().getItemInMainHand();
+                    if (hand == null || hand.getType() == Material.AIR) {
+                        sender.sendMessage(ChatColor.RED + "\u4f60\u624b\u4e2d\u6ca1\u6709\u7269\u54c1\u3002");
+                        return true;
+                    }
+                    // 加入黑名单，不清理执行者的物品
+                    LimiterMain.getBanManager().addItemBlacklist(hand);
+                    sender.sendMessage(ChatColor.GREEN + "\u5df2\u5c06 " + ChatColor.WHITE + hand.getType().name()
+                            + ChatColor.GREEN + " \u52a0\u5165\u9ed1\u540d\u5355\u3002\u4f60\u624b\u4e2d\u7684\u7269\u54c1\u672a\u88ab\u6e05\u9664\u3002");
                 }
-                // \u5148\u7528\u6240\u6709\u68c0\u6d4b\u6a21\u5757\u68c0\u67e5\u7269\u54c1\u662f\u5426\u8fdd\u89c4
-                Utils utils = new Utils();
-                if (utils.checkItem(mainHand)) {
-                    // \u68c0\u6d4b\u5230\u8fdd\u89c4\uff0c\u76f4\u63a5\u6e05\u9664
-                    ItemStack clearItem = new ItemStack(mainHand.getType(), mainHand.getAmount());
-                    player.getInventory().setItemInMainHand(clearItem);
-                    sender.sendMessage(ChatColor.GREEN + "\u68c0\u6d4b\u5230\u8fdd\u89c4\u7269\u54c1\uff0c\u5df2\u6e05\u9664\u3002");
-                } else {
-                    sender.sendMessage(ChatColor.GREEN + "\u8be5\u7269\u54c1\u672a\u68c0\u6d4b\u5230\u8fdd\u89c4\u6570\u636e\uff0c\u65e0\u9700\u6e05\u9664\u3002");
+                break;
+            case "banlist":
+                if (!sender.isOp()) { noPerm(sender); return true; }
+                {
+                    Set<String> blacklist = LimiterMain.getBanManager().getItemBlacklist();
+                    if (blacklist.isEmpty()) {
+                        sender.sendMessage(ChatColor.GRAY + "\u9ed1\u540d\u5355\u4e2d\u6ca1\u6709\u7269\u54c1\u3002");
+                    } else {
+                        sender.sendMessage(ChatColor.GOLD + "===== \u9ed1\u540d\u5355\u7269\u54c1 (" + blacklist.size() + ") =====");
+                        int i = 0;
+                        for (String sig : blacklist) {
+                            if (i >= 20) {
+                                sender.sendMessage(ChatColor.GRAY + "  ... \u8fd8\u6709 " + (blacklist.size() - 20) + " \u4e2a\u7269\u54c1\u672a\u663e\u793a");
+                                break;
+                            }
+                            // 只显示类型部分（竖线前）
+                            String display = sig.contains("|") ? sig.split("\\|", 2)[0] : sig;
+                            sender.sendMessage(ChatColor.GRAY + "  - " + ChatColor.WHITE + display);
+                            i++;
+                        }
+                    }
+                }
+                break;
+            case "whitelist":
+                if (!sender.isOp()) { noPerm(sender); return true; }
+                if (args.length < 2) {
+                    sender.sendMessage(ChatColor.RED + "\u7528\u6cd5: /" + label + " whitelist add|remove|list [\u73a9\u5bb6]");
+                    return true;
+                }
+                String sub = args[1].toLowerCase();
+                switch (sub) {
+                    case "add":
+                        if (args.length >= 3) {
+                            // whitelist add <player>
+                            String name = args[2];
+                            LimiterMain.getBanManager().addPlayerWhitelist(name);
+                            sender.sendMessage(ChatColor.GREEN + "\u5df2\u5c06\u73a9\u5bb6 " + ChatColor.WHITE + name
+                                    + ChatColor.GREEN + " \u52a0\u5165\u767d\u540d\u5355\u3002");
+                        } else {
+                            // whitelist add — 手中物品加入物品白名单
+                            if (!(sender instanceof Player)) {
+                                sender.sendMessage(ChatColor.RED + "\u8be5\u547d\u4ee4\u53ea\u80fd\u7531\u73a9\u5bb6\u4f7f\u7528\u3002");
+                                return true;
+                            }
+                            Player p = (Player) sender;
+                            ItemStack hand = p.getInventory().getItemInMainHand();
+                            if (hand == null || hand.getType() == Material.AIR) {
+                                sender.sendMessage(ChatColor.RED + "\u4f60\u624b\u4e2d\u6ca1\u6709\u7269\u54c1\u3002");
+                                return true;
+                            }
+                            LimiterMain.getBanManager().addItemWhitelist(hand);
+                            sender.sendMessage(ChatColor.GREEN + "\u5df2\u5c06 " + ChatColor.WHITE + hand.getType().name()
+                                    + ChatColor.GREEN + " \u52a0\u5165\u7269\u54c1\u767d\u540d\u5355\u3002");
+                        }
+                        break;
+                    case "remove":
+                        if (args.length >= 3) {
+                            // whitelist remove <player>
+                            String name = args[2];
+                            LimiterMain.getBanManager().removePlayerWhitelist(name);
+                            sender.sendMessage(ChatColor.GREEN + "\u5df2\u5c06\u73a9\u5bb6 " + ChatColor.WHITE + name
+                                    + ChatColor.GREEN + " \u4ece\u767d\u540d\u5355\u79fb\u9664\u3002");
+                        } else {
+                            // whitelist remove — 手中物品从物品白名单移除
+                            if (!(sender instanceof Player)) {
+                                sender.sendMessage(ChatColor.RED + "\u8be5\u547d\u4ee4\u53ea\u80fd\u7531\u73a9\u5bb6\u4f7f\u7528\u3002");
+                                return true;
+                            }
+                            Player p = (Player) sender;
+                            ItemStack hand = p.getInventory().getItemInMainHand();
+                            if (hand == null || hand.getType() == Material.AIR) {
+                                sender.sendMessage(ChatColor.RED + "\u4f60\u624b\u4e2d\u6ca1\u6709\u7269\u54c1\u3002");
+                                return true;
+                            }
+                            LimiterMain.getBanManager().removeItemWhitelist(hand);
+                            sender.sendMessage(ChatColor.GREEN + "\u5df2\u5c06 " + ChatColor.WHITE + hand.getType().name()
+                                    + ChatColor.GREEN + " \u4ece\u7269\u54c1\u767d\u540d\u5355\u79fb\u9664\u3002");
+                        }
+                        break;
+                    case "list":
+                        Set<String> wPlayers = LimiterMain.getBanManager().getWhitelistedPlayers();
+                        Set<String> wItems = LimiterMain.getBanManager().getItemWhitelist();
+                        sender.sendMessage(ChatColor.GOLD + "===== \u767d\u540d\u5355 =====");
+                        sender.sendMessage(ChatColor.YELLOW + "\u73a9\u5bb6 (" + wPlayers.size() + "):");
+                        if (wPlayers.isEmpty()) {
+                            sender.sendMessage(ChatColor.GRAY + "  (\u65e0)");
+                        } else {
+                            for (String wp : wPlayers) {
+                                sender.sendMessage(ChatColor.GRAY + "  - " + ChatColor.WHITE + wp);
+                            }
+                        }
+                        sender.sendMessage(ChatColor.YELLOW + "\u7269\u54c1 (" + wItems.size() + "):");
+                        if (wItems.isEmpty()) {
+                            sender.sendMessage(ChatColor.GRAY + "  (\u65e0)");
+                        } else {
+                            for (String wi : wItems) {
+                                String display = wi.contains("|") ? wi.split("\\|", 2)[0] : wi;
+                                sender.sendMessage(ChatColor.GRAY + "  - " + ChatColor.WHITE + display);
+                            }
+                        }
+                        break;
+                    default:
+                        sender.sendMessage(ChatColor.RED + "\u672a\u77e5\u5b50\u547d\u4ee4\u3002\u7528\u6cd5: /" + label + " whitelist add|remove|list [\u73a9\u5bb6]");
+                        return true;
                 }
                 break;
             default:
@@ -161,6 +278,19 @@ public class LimiterCommand implements TabExecutor {
                 matchedCommands = new ArrayList<>(COMMANDS);
             }
             return matchedCommands;
+        }
+        if (args.length == 2 && args[0].equalsIgnoreCase("whitelist")) {
+            List<String> matchedSub = new ArrayList<>();
+            for (String sub : WHITELIST_SUBCOMMANDS) {
+                String pattern = "^" + Pattern.quote(args[1]) + ".*";
+                if (Pattern.matches(pattern, sub)) {
+                    matchedSub.add(sub);
+                }
+            }
+            if (matchedSub.isEmpty()) {
+                matchedSub = new ArrayList<>(WHITELIST_SUBCOMMANDS);
+            }
+            return matchedSub;
         }
         return null;
     }
