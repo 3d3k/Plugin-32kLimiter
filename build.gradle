@@ -36,3 +36,19 @@ java {
 test {
     useJUnitPlatform()
 }
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(ProcessResources) {
+    filesMatching('**/*.yml') {
+        filter {
+            it.replace('\uFFFD', '')
+        }
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}

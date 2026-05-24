@@ -9,7 +9,10 @@ import org.bukkit.Registry;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.potion.PotionData;
+import org.bukkit.potion.PotionType;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -217,6 +220,116 @@ public class Utils {
         return false;
     }
 
+    // ========== 新增检测模块 (11-15) ==========
+
+    /**
+     * 检测无效药水类型 - Potion 标签指向不存在的药水类型
+     */
+    public boolean checkInvalidPotionType(ItemStack item) {
+        if (item != null && item.getType() != Material.AIR
+                && (item.getType() == Material.POTION
+                || item.getType() == Material.SPLASH_POTION
+                || item.getType() == Material.LINGERING_POTION)) {
+            NBTItem nbtItem = new NBTItem(item);
+            if (nbtItem.hasTag("Potion")) {
+                String potionId = nbtItem.getString("Potion");
+                // 检查是否是已知的药水类型 ID
+                NamespacedKey key = NamespacedKey.minecraft(potionId);
+                // 使用 PotionType 构造函数验证（如果无效会抛异常）
+                try {
+                    PotionData potionData = new PotionData(PotionType.fromKey(key));
+                } catch (IllegalArgumentException e) {
+                    return true; // 无效的药水类型
+                }
+            }
+            return false;
+        }
+        return false;
+    }
+        return false;
+    }
+
+    /**
+     * 检测无效物品模型 - item_model 指向不存在的物品
+     */
+    public boolean checkInvalidItemModel(ItemStack item) {
+        if (item != null && item.getType() != Material.AIR) {
+            NBTItem nbtItem = new NBTItem(item);
+            if (nbtItem.hasTag("ItemModel")) {
+                String modelId = nbtItem.getString("ItemModel");
+                // 检查模型 ID 是否指向有效物品
+                try {
+                    NamespacedKey key = NamespacedKey.minecraft(modelId);
+                    Material material = Registry.MATERIAL.get(key);
+                    if (material == null || material == Material.AIR) {
+                        return true; // 无效的模型
+                    }
+                } catch (Exception e) {
+                    return true; // 解析失败视为异常
+                }
+            }
+            return false;
+        }
+        return false;
+    }
+
+    /**
+     * 检测自定义地图 ID - 检测异常地图 ID（过大或负数）
+     */
+    public boolean checkCustomMapID(ItemStack item) {
+        if (item != null && item.getType() != Material.AIR && item.getType().isItem(Material.MAP)) {
+            NBTItem nbtItem = new NBTItem(item);
+            if (nbtItem.hasTag("map")) {
+                int mapId = nbtItem.getInteger("map");
+                // 地图 ID 应该 >= 0 且 < 1000000
+                if (mapId < 0 || mapId > 1000000) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return false;
+    }
+
+    /**
+     * 检测极端药水效果 - CustomPotionEffects 中的效果持续时间或等级异常
+     */
+    public boolean checkExtremePotionEffects(ItemStack item) {
+        if (item != null && item.getType() != Material.AIR) {
+            NBTItem nbtItem = new NBTItem(item);
+            NBTCompoundList effects = nbtItem.getCompoundList("CustomPotionEffects");
+            if (effects != null && effects.size() > 0) {
+                for (ReadWriteNBT effect : effects) {
+                    int duration = effect.getInteger("Duration");
+                    int amplifier = effect.getInteger("Amplifier");
+                    // 持续时间超过 600000 tick (约 55.5 分钟) 或 效果等级 > 20 视为异常
+                    if (duration > 600000 || amplifier > 20) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        return false;
+    }
+
+    /**
+     * 检测异常 CustomModelData - CustomModelData 值过大（>9999）
+     */
+    public boolean checkCustomModelData(ItemStack item) {
+        if (item != null && item.getType() != Material.AIR) {
+            ItemMeta meta = item.getItemMeta();
+            if (meta != null && meta.hasCustomModelData()) {
+                int modelData = meta.getCustomModelData();
+                if (modelData > 9999 || modelData < -9999) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return false;
+    }
+
     // ========== 刷怪蛋检测工具方法 ==========
 
     /**
@@ -264,6 +377,11 @@ public class Utils {
             if (index < detectionFlags.length && detectionFlags[index++] && checkHideFlags(itemStack)) return true;
             if (index < detectionFlags.length && detectionFlags[index++] && checkAbnormalItemName(itemStack)) return true;
             if (index < detectionFlags.length && detectionFlags[index++] && checkAbnormalFoodEffects(itemStack)) return true;
+            if (index < detectionFlags.length && detectionFlags[index++] && checkInvalidPotionType(itemStack)) return true;
+            if (index < detectionFlags.length && detectionFlags[index++] && checkInvalidItemModel(itemStack)) return true;
+            if (index < detectionFlags.length && detectionFlags[index++] && checkCustomMapID(itemStack)) return true;
+            if (index < detectionFlags.length && detectionFlags[index++] && checkExtremePotionEffects(itemStack)) return true;
+            if (index < detectionFlags.length && detectionFlags[index++] && checkCustomModelData(itemStack)) return true;
             return false;
         }
 
@@ -276,6 +394,11 @@ public class Utils {
                 || checkExtremeEnchantment(itemStack)
                 || checkHideFlags(itemStack)
                 || checkAbnormalItemName(itemStack)
-                || checkAbnormalFoodEffects(itemStack);
+                || checkAbnormalFoodEffects(itemStack)
+                || checkInvalidPotionType(itemStack)
+                || checkInvalidItemModel(itemStack)
+                || checkCustomMapID(itemStack)
+                || checkExtremePotionEffects(itemStack)
+                || checkCustomModelData(itemStack);
     }
 }

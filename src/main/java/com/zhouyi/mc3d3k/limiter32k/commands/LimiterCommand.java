@@ -56,6 +56,11 @@ public class LimiterCommand implements TabExecutor {
             sender.sendMessage("  " + statusMark(LimiterMain.detectAbnormalNameLore) + " \u5f02\u5e38\u540d\u79f0Lore       " + ChatColor.GRAY + "(abnormal-name-lore)");
             sender.sendMessage("  " + statusMark(LimiterMain.detectAbnormalFoodEffects) + " \u5f02\u5e38\u98df\u7269\u6548\u679c     " + ChatColor.GRAY + "(abnormal-food-effects)");
             sender.sendMessage("  " + statusMark(LimiterMain.detectNonOpSpawnEgg) + " \u975eOP\u5237\u602a\u86cb\u79fb\u9664     " + ChatColor.GRAY + "(remove-spawn-egg-for-non-op)");
+            sender.sendMessage("  " + statusMark(LimiterMain.detectInvalidPotionType) + " \u65e0\u6548\u836f\u6c34\u7c7b\u578b     " + ChatColor.GRAY + "(invalid-potion-type)");
+            sender.sendMessage("  " + statusMark(LimiterMain.detectInvalidItemModel) + " \u65e0\u6548\u7269\u54c1\u6a21\u578b     " + ChatColor.GRAY + "(invalid-item-model)");
+            sender.sendMessage("  " + statusMark(LimiterMain.detectCustomMapID) + " \u5f02\u5e38\u5730\u56feID         " + ChatColor.GRAY + "(custom-map-id)");
+            sender.sendMessage("  " + statusMark(LimiterMain.detectExtremePotionEffects) + " \u6781\u7aef\u836f\u6c34\u6548\u679c     " + ChatColor.GRAY + "(extreme-potion-effects)");
+            sender.sendMessage("  " + statusMark(LimiterMain.detectCustomModelData) + " \u5f02\u5e38\u6a21\u578b\u6570\u636e     " + ChatColor.GRAY + "(custom-model-data)");
 
             sender.sendMessage("");
             sender.sendMessage(ChatColor.YELLOW + bold("\u53ef\u7528\u547d\u4ee4:")); // 可用命令
@@ -88,6 +93,11 @@ public class LimiterCommand implements TabExecutor {
                 sender.sendMessage("  abnormal-name-lore: " + green(LimiterMain.detectAbnormalNameLore));
                 sender.sendMessage("  abnormal-food-effects: " + green(LimiterMain.detectAbnormalFoodEffects));
                 sender.sendMessage("  remove-spawn-egg-for-non-op: " + green(LimiterMain.detectNonOpSpawnEgg));
+                sender.sendMessage("  invalid-potion-type: " + green(LimiterMain.detectInvalidPotionType));
+                sender.sendMessage("  invalid-item-model: " + green(LimiterMain.detectInvalidItemModel));
+                sender.sendMessage("  custom-map-id: " + green(LimiterMain.detectCustomMapID));
+                sender.sendMessage("  extreme-potion-effects: " + green(LimiterMain.detectExtremePotionEffects));
+                sender.sendMessage("  custom-model-data: " + green(LimiterMain.detectCustomModelData));
                 break;
             case "enable":
                 LimiterMain.isEnabled = true;

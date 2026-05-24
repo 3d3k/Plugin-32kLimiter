@@ -32,3 +32,18 @@ detections:
 
   # 移除非OP玩家持有的刷怪蛋
   remove-spawn-egg-for-non-op: true
+
+  # 检测无效药水类型（Potion 标签指向不存在的药水）
+  invalid-potion-type: true
+
+  # 检测无效物品模型（ItemModel 指向不存在的物品）
+  invalid-item-model: true
+
+  # 检测自定义地图 ID（地图 ID 异常过大或负数）
+  custom-map-id: true
+
+  # 检测极端药水效果（持续时间 > 600000 tick 或效果等级 > 20）
+  extreme-potion-effects: true
+
+  # 检测异常 CustomModelData 值（超出 ±9999）
+  custom-model-data: true

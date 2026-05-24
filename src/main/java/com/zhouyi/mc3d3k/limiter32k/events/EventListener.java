@@ -33,7 +33,12 @@ public class EventListener implements Listener {
                 LimiterMain.detectExtremeEnchantment,
                 LimiterMain.detectHideFlags,
                 LimiterMain.detectAbnormalNameLore,
-                LimiterMain.detectAbnormalFoodEffects
+                LimiterMain.detectAbnormalFoodEffects,
+                LimiterMain.detectInvalidPotionType,
+                LimiterMain.detectInvalidItemModel,
+                LimiterMain.detectCustomMapID,
+                LimiterMain.detectExtremePotionEffects,
+                LimiterMain.detectCustomModelData
         };
     }
 
