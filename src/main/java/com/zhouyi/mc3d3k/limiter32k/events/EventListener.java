@@ -1,7 +1,7 @@
-package cn.guangchen233.limiter32k.events;
+package com.zhouyi.mc3d3k.limiter32k.events;
 
-import cn.guangchen233.limiter32k.LimiterMain;
-import cn.guangchen233.limiter32k.utils.Utils;
+import com.zhouyi.mc3d3k.limiter32k.LimiterMain;
+import com.zhouyi.mc3d3k.limiter32k.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -10,6 +10,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -18,17 +19,42 @@ public class EventListener implements Listener {
     private final Utils utils = new Utils();
     private final ItemStack AIR = new ItemStack(Material.AIR);
 
+    /**
+     * 获取当前启用的检测模块标志数组
+     * 顺序必须与 Utils.checkItem(ItemStack, boolean...) 中 varargs 的顺序一致
+     */
+    private boolean[] getDetectionFlags() {
+        return new boolean[]{
+                LimiterMain.detectAbnormalNBT,
+                LimiterMain.detectAbnormalEnchantment,
+                LimiterMain.detectAbnormalAmount,
+                LimiterMain.detectUnbreakable,
+                LimiterMain.detectIllegalEnchantments,
+                LimiterMain.detectExtremeEnchantment,
+                LimiterMain.detectHideFlags,
+                LimiterMain.detectAbnormalNameLore,
+                LimiterMain.detectAbnormalFoodEffects
+        };
+    }
+
+    /**
+     * 判断非 OP 玩家是否持有生成蛋（移除非 OP 生成蛋检测）
+     */
+    private boolean isNonOpWithSpawnEgg(Player player, ItemStack item) {
+        return !player.isOp() && LimiterMain.detectNonOpSpawnEgg && utils.isSpawnEgg(item);
+    }
+
     @EventHandler
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         if (LimiterMain.isEnabled) {
             if (event.getDamage() > 30D) {
                 if (event.getDamager() instanceof Player) {
                     Player player = (Player) event.getDamager();
-                    if (utils.checkItem(player.getInventory().getItemInMainHand())) {
+                    if (utils.checkItem(player.getInventory().getItemInMainHand(), getDetectionFlags()) || isNonOpWithSpawnEgg(player, player.getInventory().getItemInMainHand())) {
                         event.setDamage(40D);
                         player.getInventory().setItemInMainHand(AIR);
                     }
-                    if (utils.checkItem(player.getInventory().getItemInOffHand())) {
+                    if (utils.checkItem(player.getInventory().getItemInOffHand(), getDetectionFlags()) || isNonOpWithSpawnEgg(player, player.getInventory().getItemInOffHand())) {
                         event.setDamage(40D);
                         player.getInventory().setItemInOffHand(AIR);
                     }
@@ -40,8 +66,9 @@ public class EventListener implements Listener {
     @EventHandler
     public void onPlayerSwapHandItems(PlayerSwapHandItemsEvent event) {
         if (LimiterMain.isEnabled) {
-            boolean mainHandResult = utils.checkItem(event.getMainHandItem());
-            boolean offHandResult = utils.checkItem(event.getOffHandItem());
+            Player player = event.getPlayer();
+            boolean mainHandResult = utils.checkItem(event.getMainHandItem(), getDetectionFlags()) || isNonOpWithSpawnEgg(player, event.getMainHandItem());
+            boolean offHandResult = utils.checkItem(event.getOffHandItem(), getDetectionFlags()) || isNonOpWithSpawnEgg(player, event.getOffHandItem());
             if (mainHandResult) {
                 event.setMainHandItem(AIR);
             }
@@ -54,8 +81,10 @@ public class EventListener implements Listener {
     @EventHandler
     public void EntityPickupItem(EntityPickupItemEvent event) {
         if (LimiterMain.isEnabled) {
+            if (!(event.getEntity() instanceof Player)) return;
+            Player player = (Player) event.getEntity();
             ItemStack item = event.getItem().getItemStack();
-            if (utils.checkItem(item)) {
+            if (utils.checkItem(item, getDetectionFlags()) || isNonOpWithSpawnEgg(player, item)) {
                 event.setCancelled(true);
                 event.getItem().remove();
             }
@@ -65,7 +94,13 @@ public class EventListener implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (LimiterMain.isEnabled) {
-            if (utils.checkItem(event.getCurrentItem())) {
+            Player player = null;
+            if (event.getWhoClicked() instanceof Player) {
+                player = (Player) event.getWhoClicked();
+            }
+            boolean abnormal = utils.checkItem(event.getCurrentItem(), getDetectionFlags())
+                    || (player != null && isNonOpWithSpawnEgg(player, event.getCurrentItem()));
+            if (abnormal) {
                 if (event.getInventory().getType() != InventoryType.HOPPER) {
                     event.setCurrentItem(AIR);
                 } else if (event.getAction() != InventoryAction.PICKUP_ALL) {
@@ -78,11 +113,12 @@ public class EventListener implements Listener {
     @EventHandler
     public void onInventoryOpen(InventoryOpenEvent event) {
         if (LimiterMain.isEnabled) {
+            Player player = (event.getPlayer() instanceof Player) ? (Player) event.getPlayer() : null;
             ItemStack[] items = event.getInventory().getStorageContents();
             if (items.length > 0) {
                 ArrayList<ItemStack> abnormalItems = new ArrayList<>();
                 for (ItemStack item : items) {
-                    if (utils.checkItem(item)) {
+                    if (utils.checkItem(item, getDetectionFlags()) || (player != null && isNonOpWithSpawnEgg(player, item))) {
                         if (!abnormalItems.contains(item)) {
                             abnormalItems.add(item);
                         }
@@ -92,7 +128,6 @@ public class EventListener implements Listener {
                     for (ItemStack item : abnormalItems) {
                         event.getInventory().remove(item);
                     }
-
                 }
             }
         }
@@ -101,12 +136,13 @@ public class EventListener implements Listener {
     @EventHandler
     public void onInventoryCloseEvent(InventoryCloseEvent event) {
         if (LimiterMain.isEnabled) {
+            Player player = (event.getPlayer() instanceof Player) ? (Player) event.getPlayer() : null;
             // Player
             ItemStack[] items = event.getPlayer().getInventory().getStorageContents();
             if (items.length > 0) {
                 ArrayList<ItemStack> abnormalItems = new ArrayList<>();
                 for (ItemStack item : items) {
-                    if (utils.checkItem(item)) {
+                    if (utils.checkItem(item, getDetectionFlags()) || (player != null && isNonOpWithSpawnEgg(player, item))) {
                         if (!abnormalItems.contains(item)) {
                             abnormalItems.add(item);
                         }
@@ -123,7 +159,7 @@ public class EventListener implements Listener {
             if (inventoryContents.length > 0) {
                 ArrayList<ItemStack> abnormalItems = new ArrayList<>();
                 for (ItemStack item : inventoryContents) {
-                    if (utils.checkItem(item)) {
+                    if (utils.checkItem(item, getDetectionFlags()) || (player != null && isNonOpWithSpawnEgg(player, item))) {
                         if (!abnormalItems.contains(item)) {
                             abnormalItems.add(item);
                         }

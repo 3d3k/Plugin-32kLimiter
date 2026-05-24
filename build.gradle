@@ -2,7 +2,7 @@ plugins {
     id 'java'
 }
 
-group 'cn.guangchen233'
+group 'com.zhouyi.mc3d3k.limiter32k'
 version '2.1.0'
 
 repositories {
@@ -11,11 +11,7 @@ repositories {
     }
 
     maven {
-        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
-        content {
-            includeGroup 'org.bukkit'
-            includeGroup 'org.spigotmc'
-        }
+        url = 'https://repo.purpurmc.org/snapshots'
     }
 
     maven {
@@ -34,8 +30,14 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'org.spigotmc:spigot-api:1.12.2-R0.1-SNAPSHOT'
-    compileOnly 'de.tr7zw:item-nbt-api-plugin:2.9.0'
+    compileOnly 'org.purpurmc.purpur:purpur-api:1.21.1-R0.1-SNAPSHOT'
+    compileOnly 'de.tr7zw:item-nbt-api:2.14.1'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
 }
 
 test {

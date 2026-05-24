@@ -1,2 +1,34 @@
 # Plugin master switch
 enabled: true
+
+# Detection modules — set false to disable any check
+detections:
+  # 检测异常 NBT 属性修饰（如攻击伤害/生命值过高）
+  abnormal-nbt: true
+
+  # 检测异常附魔等级（超过原版最大等级，如锋利6+）
+  abnormal-enchantment: true
+
+  # 检测异常堆叠数量（如一组64个以上的物品）
+  abnormal-amount: true
+
+  # 检测不可破坏标签（Unbreakable:1，作弊物品常见）
+  unbreakable: true
+
+  # 检测非法附魔组合（互斥附魔共存，如精准采集+时运）
+  illegal-enchantments: true
+
+  # 检测极端附魔等级（超过 32767，真正的"32k"等级）
+  extreme-enchantment: true
+
+  # 检测隐藏属性标志（使用 HideFlags 隐藏物品信息）
+  hide-flags: true
+
+  # 检测异常物品名称（过长、过多颜色代码）
+  abnormal-name-lore: true
+
+  # 检测食品物品的异常药水效果（超过 3 种效果或效果等级 > 5）
+  abnormal-food-effects: true
+
+  # 移除非OP玩家持有的刷怪蛋
+  remove-spawn-egg-for-non-op: true

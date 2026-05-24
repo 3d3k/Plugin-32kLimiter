@@ -1,6 +1,6 @@
-package cn.guangchen233.limiter32k.commands;
+package com.zhouyi.mc3d3k.limiter32k.commands;
 
-import cn.guangchen233.limiter32k.LimiterMain;
+import com.zhouyi.mc3d3k.limiter32k.LimiterMain;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
