@@ -51,7 +51,9 @@ public class LimiterMain extends JavaPlugin {
         isEnabled = getConfig().getBoolean("enabled");
         loadDetectionsConfig();
         Bukkit.getPluginManager().registerEvents(new EventListener(), this);
-        Bukkit.getPluginCommand("32klimiter").setExecutor(new LimiterCommand());
-        Bukkit.getPluginCommand("32klimiter").setTabCompleter(new LimiterCommand());
+        if (Bukkit.getPluginCommand("32klimiter") != null) {
+            Bukkit.getPluginCommand("32klimiter").setExecutor(new LimiterCommand());
+            Bukkit.getPluginCommand("32klimiter").setTabCompleter(new LimiterCommand());
+        }
     }
 }

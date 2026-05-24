@@ -2,19 +2,6 @@ name: Limiter32k
 main: com.zhouyi.mc3d3k.limiter32k.LimiterMain
 version: 2.1.0
 author: GuangChen233
-website: https://github.com/GuangChen2333/32kLimiter
 api-version: '1.21'
-prefix: 32kLimiter
-
-commands:
-  32klimiter:
-    description: 32klimiter commands
-    usage: /32klimiter reload|enable|disable
-    permission: 32klimiter.admin
-
-permissions:
-  32klimiter.admin:
-    default: op
-
-depend:
+softdepend:
   - NBTAPI
