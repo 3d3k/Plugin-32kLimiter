@@ -4,6 +4,8 @@ import de.tr7zw.nbtapi.NBTCompoundList;
 import de.tr7zw.nbtapi.NBTItem;
 import de.tr7zw.nbtapi.iface.ReadWriteNBT;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -86,55 +88,55 @@ public class Utils {
             }
             Set<Enchantment> enchSet = enchantments.keySet();
 
-            // 定义互斥附魔组（Paper 1.20.5+ / 1.21 API 常量名）
+            // 定义互斥附魔组（Paper 1.21+ Registry 方式）
             // 保护类互斥
             if (containsConflictGroup(enchSet,
-                    Enchantment.PROTECTION,
-                    Enchantment.FIRE_PROTECTION,
-                    Enchantment.PROJECTILE_PROTECTION,
-                    Enchantment.BLAST_PROTECTION)) {
+                    Registry.ENCHANTMENT.get(NamespacedKey.minecraft("protection")),
+                    Registry.ENCHANTMENT.get(NamespacedKey.minecraft("fire_protection")),
+                    Registry.ENCHANTMENT.get(NamespacedKey.minecraft("projectile_protection")),
+                    Registry.ENCHANTMENT.get(NamespacedKey.minecraft("blast_protection")))) {
                 return true;
             }
             // 锋利/亡灵杀手/节肢杀手互斥
             if (containsConflictGroup(enchSet,
-                    Enchantment.SHARPNESS,
-                    Enchantment.SMITE,
-                    Enchantment.BANE_OF_ARTHROPODS)) {
+                    Registry.ENCHANTMENT.get(NamespacedKey.minecraft("sharpness")),
+                    Registry.ENCHANTMENT.get(NamespacedKey.minecraft("smite")),
+                    Registry.ENCHANTMENT.get(NamespacedKey.minecraft("bane_of_arthropods")))) {
                 return true;
             }
             // 精准采集与时运互斥
             if (containsConflictGroup(enchSet,
-                    Enchantment.SILK_TOUCH,
-                    Enchantment.FORTUNE)) {
+                    Registry.ENCHANTMENT.get(NamespacedKey.minecraft("silk_touch")),
+                    Registry.ENCHANTMENT.get(NamespacedKey.minecraft("fortune")))) {
                 return true;
             }
             // 无限与经验修补互斥
             if (containsConflictGroup(enchSet,
-                    Enchantment.INFINITY,
-                    Enchantment.MENDING)) {
+                    Registry.ENCHANTMENT.get(NamespacedKey.minecraft("infinity")),
+                    Registry.ENCHANTMENT.get(NamespacedKey.minecraft("mending")))) {
                 return true;
             }
             // 冰霜行者与深海探索者互斥
             if (containsConflictGroup(enchSet,
-                    Enchantment.FROST_WALKER,
-                    Enchantment.DEPTH_STRIDER)) {
+                    Registry.ENCHANTMENT.get(NamespacedKey.minecraft("frost_walker")),
+                    Registry.ENCHANTMENT.get(NamespacedKey.minecraft("depth_strider")))) {
                 return true;
             }
             // 多重射击与穿透互斥
             if (containsConflictGroup(enchSet,
-                    Enchantment.MULTISHOT,
-                    Enchantment.PIERCING)) {
+                    Registry.ENCHANTMENT.get(NamespacedKey.minecraft("multishot")),
+                    Registry.ENCHANTMENT.get(NamespacedKey.minecraft("piercing")))) {
                 return true;
             }
             // 激流与忠诚/引雷互斥
             if (containsConflictGroup(enchSet,
-                    Enchantment.RIPTIDE,
-                    Enchantment.LOYALTY)) {
+                    Registry.ENCHANTMENT.get(NamespacedKey.minecraft("riptide")),
+                    Registry.ENCHANTMENT.get(NamespacedKey.minecraft("loyalty")))) {
                 return true;
             }
             if (containsConflictGroup(enchSet,
-                    Enchantment.RIPTIDE,
-                    Enchantment.CHANNELING)) {
+                    Registry.ENCHANTMENT.get(NamespacedKey.minecraft("riptide")),
+                    Registry.ENCHANTMENT.get(NamespacedKey.minecraft("channeling")))) {
                 return true;
             }
         }

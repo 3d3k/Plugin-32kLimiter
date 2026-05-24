@@ -15,3 +15,6 @@ gradle-app.setting
 # Non-required project files
 /Social_Preview.png
 .atomcode/
+*.log
+hs_err_pid*.log
+replay_pid*.log
