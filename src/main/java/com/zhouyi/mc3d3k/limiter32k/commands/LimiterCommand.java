@@ -1,10 +1,15 @@
 package com.zhouyi.mc3d3k.limiter32k.commands;
 
 import com.zhouyi.mc3d3k.limiter32k.LimiterMain;
+import de.tr7zw.nbtapi.NBT;
+import de.tr7zw.nbtapi.NBTItem;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -69,6 +74,7 @@ public class LimiterCommand implements TabExecutor {
             sender.sendMessage(ChatColor.GOLD + "/" + label + " enable " + ChatColor.WHITE + "- " + ChatColor.GRAY + "\u542f\u7528\u63d2\u4ef6");
             sender.sendMessage(ChatColor.GOLD + "/" + label + " disable " + ChatColor.WHITE + "- " + ChatColor.GRAY + "\u7981\u7528\u63d2\u4ef6");
             sender.sendMessage(ChatColor.GOLD + "/" + label + " status " + ChatColor.WHITE + "- " + ChatColor.GRAY + "\u67e5\u770b\u63d2\u4ef6\u72b6\u6001");
+            sender.sendMessage(ChatColor.GOLD + "/" + label + " banitem " + ChatColor.WHITE + "- " + ChatColor.GRAY + "\u6e05\u9664\u624b\u4e2d\u7269\u54c1NBT");
             return true;
         }
 
@@ -112,6 +118,30 @@ public class LimiterCommand implements TabExecutor {
                         ? ChatColor.GREEN + "\u5df2\u542f\u7528"    // 已启用
                         : ChatColor.RED + "\u5df2\u7981\u7528";      // 已禁用
                 sender.sendMessage(ChatColor.GOLD + "\u63d2\u4ef6\u5f53\u524d\u72b6\u6001: " + status); // 插件当前状态:
+                break;
+            case "banitem":
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage(ChatColor.RED + "\u8be5\u547d\u4ee4\u53ea\u80fd\u7531\u73a9\u5bb6\u4f7f\u7528\u3002");
+                    return false;
+                }
+                Player player = (Player) sender;
+                ItemStack mainHand = player.getInventory().getItemInMainHand();
+                if (mainHand == null || mainHand.getType() == Material.AIR) {
+                    sender.sendMessage(ChatColor.RED + "\u4f60\u624b\u4e2d\u6ca1\u6709\u7269\u54c1\u3002");
+                    return false;
+                }
+                try {
+                    NBTItem nbtItem = new NBTItem(mainHand);
+                    // 清除所有NBT标签
+                    for (String key : nbtItem.getTags().keySet()) {
+                        nbtItem.removeTag(key);
+                    }
+                    // 将修改后的NBT物品应用到主手
+                    player.getInventory().setItemInMainHand(nbtItem.getItemStack());
+                    sender.sendMessage(ChatColor.GREEN + "\u5df2\u6e05\u9664\u624b\u4e2d\u7269\u54c1\u7684\u6240\u6709NBT\u6570\u636e\u3002");
+                } catch (Exception e) {
+                    sender.sendMessage(ChatColor.RED + "\u6e05\u9664NBT\u5931\u8d25\u3002\u8bf7\u786e\u8ba4\u5b89\u88c5\u4e86NBTAPI\u3002");
+                }
                 break;
             default:
                 sender.sendMessage(ChatColor.RED + "\u672a\u77e5\u547d\u4ee4\u3002\u8f93\u5165 /" + label + " \u67e5\u770b\u5e2e\u52a9\u3002"); // 未知命令。输入 /... 查看帮助。
