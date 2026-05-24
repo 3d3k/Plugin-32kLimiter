@@ -235,7 +235,7 @@ public class Utils {
                 String potionId = nbtItem.getString("Potion");
                 // 检查是否是已知的药水类型 ID
                 NamespacedKey key = NamespacedKey.minecraft(potionId);
-                PotionType potionType = PotionType.getByKey(key);
+                PotionType potionType = Registry.POTION.get(key);
                 if (potionType == null) {
                     return true; // 无效的药水类型
                 }
