@@ -21,7 +21,7 @@ public class Utils {
         if (item != null && item.getType() != Material.AIR) {
             NBTItem nbtItem = new NBTItem(item);
             NBTCompoundList attrs = nbtItem.getCompoundList("AttributeModifiers");
-            if (attrs.size() > 0) {
+            if (attrs != null && attrs.size() > 0) {
                 for (ReadWriteNBT attr : attrs) {
                     if (attr.getInteger("Amount") != 0) {
                         return true;
@@ -201,7 +201,7 @@ public class Utils {
         if (item != null && item.getType() != Material.AIR && item.getType().isEdible()) {
             NBTItem nbtItem = new NBTItem(item);
             NBTCompoundList effects = nbtItem.getCompoundList("CustomPotionEffects");
-            if (effects.size() > 0) {
+            if (effects != null && effects.size() > 0) {
                 // 效果数量超过 3 个为异常
                 if (effects.size() > 3) {
                     return true;

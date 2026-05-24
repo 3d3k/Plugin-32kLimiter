@@ -101,11 +101,7 @@ public class EventListener implements Listener {
             boolean abnormal = utils.checkItem(event.getCurrentItem(), getDetectionFlags())
                     || (player != null && isNonOpWithSpawnEgg(player, event.getCurrentItem()));
             if (abnormal) {
-                if (event.getInventory().getType() != InventoryType.HOPPER) {
-                    event.setCurrentItem(AIR);
-                } else if (event.getAction() != InventoryAction.PICKUP_ALL) {
-                    event.setCurrentItem(AIR);
-                }
+                event.setCurrentItem(AIR);
             }
         }
     }
@@ -137,6 +133,9 @@ public class EventListener implements Listener {
     public void onInventoryCloseEvent(InventoryCloseEvent event) {
         if (LimiterMain.isEnabled) {
             Player player = (event.getPlayer() instanceof Player) ? (Player) event.getPlayer() : null;
+            // 如果关闭的是玩家自己的背包（按E键），event.getInventory() 就是 player.getInventory()
+            // 此时只需扫描一次，避免重复判定
+            boolean isOwnInventory = event.getInventory().equals(event.getPlayer().getInventory());
             // Player
             ItemStack[] items = event.getPlayer().getInventory().getStorageContents();
             if (items.length > 0) {
@@ -154,20 +153,22 @@ public class EventListener implements Listener {
                     }
                 }
             }
-            // Inventory
-            ItemStack[] inventoryContents = event.getInventory().getStorageContents();
-            if (inventoryContents.length > 0) {
-                ArrayList<ItemStack> abnormalItems = new ArrayList<>();
-                for (ItemStack item : inventoryContents) {
-                    if (utils.checkItem(item, getDetectionFlags()) || (player != null && isNonOpWithSpawnEgg(player, item))) {
-                        if (!abnormalItems.contains(item)) {
-                            abnormalItems.add(item);
+            // Inventory（如果不是玩家自己的背包，再扫描事件窗口）
+            if (!isOwnInventory) {
+                ItemStack[] inventoryContents = event.getInventory().getStorageContents();
+                if (inventoryContents.length > 0) {
+                    ArrayList<ItemStack> abnormalItems = new ArrayList<>();
+                    for (ItemStack item : inventoryContents) {
+                        if (utils.checkItem(item, getDetectionFlags()) || (player != null && isNonOpWithSpawnEgg(player, item))) {
+                            if (!abnormalItems.contains(item)) {
+                                abnormalItems.add(item);
+                            }
                         }
                     }
-                }
-                if (abnormalItems.size() > 0) {
-                    for (ItemStack item : abnormalItems) {
-                        event.getInventory().remove(item);
+                    if (abnormalItems.size() > 0) {
+                        for (ItemStack item : abnormalItems) {
+                            event.getInventory().remove(item);
+                        }
                     }
                 }
             }
