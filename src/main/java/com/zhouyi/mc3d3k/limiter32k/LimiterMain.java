@@ -125,7 +125,8 @@ public class LimiterMain extends JavaPlugin {
         return 15;
     }
 
-    @Override
+    // NOTE: reload() intentionally NOT annotated with @Override
+    // JavaPlugin.reloadConfig() is available; custom reload() handles config sync.
     public void reload() {
         reloadConfig();
         isEnabled = getConfig().getBoolean("enabled");

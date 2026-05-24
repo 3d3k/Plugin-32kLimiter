@@ -235,10 +235,8 @@ public class Utils {
                 String potionId = nbtItem.getString("Potion");
                 // 检查是否是已知的药水类型 ID
                 NamespacedKey key = NamespacedKey.minecraft(potionId);
-                // 使用 PotionType 构造函数验证（如果无效会抛异常）
-                try {
-                    PotionData potionData = new PotionData(PotionType.fromKey(key));
-                } catch (IllegalArgumentException e) {
+                PotionType potionType = PotionType.getByKey(key);
+                if (potionType == null) {
                     return true; // 无效的药水类型
                 }
             }
@@ -275,7 +273,7 @@ public class Utils {
      * 检测自定义地图 ID - 检测异常地图 ID（过大或负数）
      */
     public boolean checkCustomMapID(ItemStack item) {
-        if (item != null && item.getType() != Material.AIR && item.getType().isItem(Material.MAP)) {
+        if (item != null && item.getType() != Material.AIR && Material.MAP.isItem()) {
             NBTItem nbtItem = new NBTItem(item);
             if (nbtItem.hasTag("map")) {
                 int mapId = nbtItem.getInteger("map");

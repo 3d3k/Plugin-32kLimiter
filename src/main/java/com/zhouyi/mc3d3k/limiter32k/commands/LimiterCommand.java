@@ -132,12 +132,9 @@ public class LimiterCommand implements TabExecutor {
                 }
                 try {
                     NBTItem nbtItem = new NBTItem(mainHand);
-                    // 清除所有NBT标签
-                    for (String key : nbtItem.getTags().keySet()) {
-                        nbtItem.removeTag(key);
-                    }
-                    // 将修改后的NBT物品应用到主手
-                    player.getInventory().setItemInMainHand(nbtItem.getItemStack());
+                    // 清除所有NBT标签 —— 直接替换为新物品（无NBT数据）
+                    ItemStack clearItem = new ItemStack(mainHand.getType(), mainHand.getAmount());
+                    player.getInventory().setItemInMainHand(clearItem);
                     sender.sendMessage(ChatColor.GREEN + "\u5df2\u6e05\u9664\u624b\u4e2d\u7269\u54c1\u7684\u6240\u6709NBT\u6570\u636e\u3002");
                 } catch (Exception e) {
                     sender.sendMessage(ChatColor.RED + "\u6e05\u9664NBT\u5931\u8d25\u3002\u8bf7\u786e\u8ba4\u5b89\u88c5\u4e86NBTAPI\u3002");
