@@ -4,6 +4,7 @@ import com.zhouyi.mc3d3k.limiter32k.utils.BanManager;
 import com.zhouyi.mc3d3k.limiter32k.commands.LimiterCommand;
 import com.zhouyi.mc3d3k.limiter32k.events.EventListener;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class LimiterMain extends JavaPlugin {
@@ -58,37 +59,37 @@ public class LimiterMain extends JavaPlugin {
     @Override
     public void onEnable() {
         INSTANCE = this;
-        
-        getLogger().info("=========================================");
-        getLogger().info("  32kLimiter by Zhouyi");
-        getLogger().info("  github.com/ZhouyiStudio/32kLimiter");
-        getLogger().info("  QQ: 823672854");
-        getLogger().info("=========================================");
-        
+
+        getLogger().info(ChatColor.GOLD + "=========================================");
+        getLogger().info(ChatColor.GOLD + "  " + ChatColor.AQUA + "32kLimiter" + ChatColor.GOLD + " by Zhouyi");
+        getLogger().info(ChatColor.GOLD + "  " + ChatColor.GRAY + "github.com/ZhouyiStudio/32kLimiter");
+        getLogger().info(ChatColor.GOLD + "  " + ChatColor.GRAY + "QQ: 823672854");
+        getLogger().info(ChatColor.GOLD + "=========================================");
+
         saveDefaultConfig();
         banManager = new BanManager(this);
-        getLogger().info("[1/7] 加载配置文件... 完成");
-        
+        getLogger().info(ChatColor.GREEN + "[1/7] 加载配置文件... 完成");
+
         isEnabled = getConfig().getBoolean("enabled");
         loadDetectionsConfig();
-        getLogger().info("[2/7] 加载 " + getTotalDetections() + " 个检测模块 (已启用 " + countEnabledDetections() + ")");
-        
+        getLogger().info(ChatColor.GREEN + "[2/7] 加载 " + getTotalDetections() + " 个检测模块 (已启用 " + countEnabledDetections() + ")");
+
         Bukkit.getPluginManager().registerEvents(new EventListener(), this);
-        getLogger().info("[3/7] 注册事件监听器... 完成");
-        
+        getLogger().info(ChatColor.GREEN + "[3/7] 注册事件监听器... 完成");
+
         if (Bukkit.getPluginCommand("limiter") != null) {
             Bukkit.getPluginCommand("limiter").setExecutor(new LimiterCommand());
             Bukkit.getPluginCommand("limiter").setTabCompleter(new LimiterCommand());
-            getLogger().info("[4/7] 注册命令 /limiter /32klimiter... 完成");
+            getLogger().info(ChatColor.GREEN + "[4/7] 注册命令 /limiter /32klimiter... 完成");
         } else {
-            getLogger().info("[4/7] 警告: limiter 命令未找到!");
+            getLogger().info(ChatColor.RED + "[4/7] 警告: limiter 命令未找到!");
         }
-        
-        getLogger().info("[5/7] 插件主开关: " + (isEnabled ? "启用" : "禁用"));
-        getLogger().info("[6/7] 检测模块状态:");
+
+        getLogger().info(ChatColor.YELLOW + "[5/7] 插件主开关: " + (isEnabled ? ChatColor.GREEN + "启用" : ChatColor.RED + "禁用"));
+        getLogger().info(ChatColor.YELLOW + "[6/7] 检测模块状态:");
         printDetectionStatus();
-        getLogger().info("[7/7] 32kLimiter 启动完成!");
-        getLogger().info("=========================================");
+        getLogger().info(ChatColor.AQUA + "[7/7] 32kLimiter 启动完成!");
+        getLogger().info(ChatColor.GOLD + "=========================================");
     }
 
     @Override
@@ -99,21 +100,25 @@ public class LimiterMain extends JavaPlugin {
     }
 
     private void printDetectionStatus() {
-        if (detectAbnormalNBT) getLogger().info("  ✔ abnormal-nbt (异常NBT属性)");
-        if (detectAbnormalEnchantment) getLogger().info("  ✔ abnormal-enchantment (异常附魔等级)");
-        if (detectAbnormalAmount) getLogger().info("  ✔ abnormal-amount (异常堆叠数量)");
-        if (detectUnbreakable) getLogger().info("  ✔ unbreakable (不可破坏标签)");
-        if (detectIllegalEnchantments) getLogger().info("  ✔ illegal-enchantments (互斥附魔共存)");
-        if (detectExtremeEnchantment) getLogger().info("  ✔ extreme-enchantment (极端附魔等级)");
-        if (detectHideFlags) getLogger().info("  ✔ hide-flags (隐藏属性标志)");
-        if (detectAbnormalNameLore) getLogger().info("  ✔ abnormal-name-lore (异常名称Lore)");
-        if (detectAbnormalFoodEffects) getLogger().info("  ✔ abnormal-food-effects (异常食物效果)");
-        if (detectNonOpSpawnEgg) getLogger().info("  ✔ remove-spawn-egg-for-non-op (移除非OP刷怪蛋)");
-        if (detectInvalidPotionType) getLogger().info("  ✔ invalid-potion-type (无效药水类型)");
-        if (detectInvalidItemModel) getLogger().info("  ✔ invalid-item-model (无效物品模型)");
-        if (detectCustomMapID) getLogger().info("  ✔ custom-map-id (异常地图ID)");
-        if (detectExtremePotionEffects) getLogger().info("  ✔ extreme-potion-effects (极端药水效果)");
-        if (detectCustomModelData) getLogger().info("  ✔ custom-model-data (异常模型数据)");
+        printOne(detectAbnormalNBT, "abnormal-nbt (异常NBT属性)");
+        printOne(detectAbnormalEnchantment, "abnormal-enchantment (异常附魔等级)");
+        printOne(detectAbnormalAmount, "abnormal-amount (异常堆叠数量)");
+        printOne(detectUnbreakable, "unbreakable (不可破坏标签)");
+        printOne(detectIllegalEnchantments, "illegal-enchantments (互斥附魔共存)");
+        printOne(detectExtremeEnchantment, "extreme-enchantment (极端附魔等级)");
+        printOne(detectHideFlags, "hide-flags (隐藏属性标志)");
+        printOne(detectAbnormalNameLore, "abnormal-name-lore (异常名称Lore)");
+        printOne(detectAbnormalFoodEffects, "abnormal-food-effects (异常食物效果)");
+        printOne(detectNonOpSpawnEgg, "remove-spawn-egg-for-non-op (移除非OP刷怪蛋)");
+        printOne(detectInvalidPotionType, "invalid-potion-type (无效药水类型)");
+        printOne(detectInvalidItemModel, "invalid-item-model (无效物品模型)");
+        printOne(detectCustomMapID, "custom-map-id (异常地图ID)");
+        printOne(detectExtremePotionEffects, "extreme-potion-effects (极端药水效果)");
+        printOne(detectCustomModelData, "custom-model-data (异常模型数据)");
+    }
+
+    private void printOne(boolean on, String desc) {
+        getLogger().info((on ? ChatColor.GREEN : ChatColor.RED) + "  " + (on ? "✔" : "✘") + " " + ChatColor.GRAY + desc);
     }
 
     private int countEnabledDetections() {
