@@ -108,7 +108,7 @@ detections:
 
 This plugin does not completely block 32k weapons, players can use 32k in the **hopper** as normal (similar to 2b2t servers)
 
-If you like this project, please give us a Star or [donate to us](https://afdian.net/@GuangChen2333), it will make a great contribution to our development work!
+If you like this project, please give us a Star or [donate to us](https://3d3k.org/sponsor.html), it will make a great contribution to our development work!
 
 If you are using this plugin on your own server, I'd love it if you could put a link to the plugin's repository somewhere
 
