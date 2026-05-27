@@ -9,7 +9,7 @@
 
 A Spigot plugin for limiting 32k weapons
 
-Supported versions of Minecraft: 1.12.2
+Supported versions of Minecraft: 1.21
 
 > Note: In version 2.0.0 and later, this plugin will rely on the [**`NBT API`**](https://www.spigotmc.org/resources/nbt-api.7939/)
 >
