@@ -160,7 +160,7 @@ public class LimiterCommand implements TabExecutor {
                     return true;
                 }
                 LimiterMain.advancedExeMode = true;
-                sender.sendMessage(ChatColor.GREEN + "高级执行模式已启用。现在可执行高级命令 (reload/config/enable/disable/banitem/banlist/whitelist/unbanitem)。");
+                sender.sendMessage(ChatColor.GREEN + "高级执行模式已启用。现在可执行高级命令 (reload/config/enable/disable)。");
                 break;
             case "exedel":
                 if (!(sender instanceof ConsoleCommandSender)) {
@@ -172,7 +172,6 @@ public class LimiterCommand implements TabExecutor {
                 break;
             case "banitem":
                 if (!sender.isOp()) { noPerm(sender); return true; }
-                if (!LimiterMain.advancedExeMode) { noAdvancedMode(sender); return true; }
                 if (!(sender instanceof Player)) {
                     sender.sendMessage(ChatColor.RED + "\u8be5\u547d\u4ee4\u53ea\u80fd\u7531\u73a9\u5bb6\u4f7f\u7528\u3002");
                     return true;
@@ -192,7 +191,6 @@ public class LimiterCommand implements TabExecutor {
                 break;
             case "unbanitem":
                 if (!sender.isOp()) { noPerm(sender); return true; }
-                if (!LimiterMain.advancedExeMode) { noAdvancedMode(sender); return true; }
                 if (!(sender instanceof Player)) {
                     sender.sendMessage(ChatColor.RED + "\u8be5\u547d\u4ee4\u53ea\u80fd\u7531\u73a9\u5bb6\u4f7f\u7528\u3002");
                     return true;
@@ -214,7 +212,6 @@ public class LimiterCommand implements TabExecutor {
                 break;
             case "banlist":
                 if (!sender.isOp()) { noPerm(sender); return true; }
-                if (!LimiterMain.advancedExeMode) { noAdvancedMode(sender); return true; }
                 {
                     Set<String> blacklist = LimiterMain.getBanManager().getItemBlacklist();
                     if (blacklist.isEmpty()) {
@@ -237,7 +234,6 @@ public class LimiterCommand implements TabExecutor {
                 break;
             case "whitelist":
                 if (!sender.isOp()) { noPerm(sender); return true; }
-                if (!LimiterMain.advancedExeMode) { noAdvancedMode(sender); return true; }
                 if (args.length < 2) {
                     sender.sendMessage(ChatColor.RED + "\u7528\u6cd5: /" + label + " whitelist add|remove|list [\u73a9\u5bb6]");
                     return true;
